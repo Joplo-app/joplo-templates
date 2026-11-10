@@ -15,10 +15,30 @@ Vendor only the required, redistributable CSS primitives; scope them under an au
 
 Choose --jp-stroke: clean in a project theme when CSS supplies historical borders and button bevels. UI components supply inline defaults for size, padding and color; a class alone may not win. Prefer documented props or explicit style overrides for ordinary cases. When a reusable vendor theme must own these values, narrowly scoped !important declarations can override just those defaults. Check computed styles, the actual rendered button and text contrast; do not globally change --jp-ink merely to tint a button.
 
-Native inputs are the editable surface; their displayed text is not a real backend. A local send reaction can set ui.sent while the result bubble reads inputs.<fieldId>, so the audience sees their own text without copying it into script data. Use a named option.free object, give each reaction a stable key, and retain the deterministic send effects in a scenario. Verify the same reaction in the actual built site as well as the board; a valid script does not prove that publication retained local reaction data. Test a non-script phrase: an exact next action can commit the script instead, and an exact action belonging to another scenario can prompt to switch.
+Native inputs are the editable surface; their displayed text is not a real backend. A local send reaction can set ui.sent while the result bubble reads inputs.<fieldId>, so the audience sees their own text without copying it into script data. Use a named work.free object, give each reaction a stable key, and retain the deterministic send effects in a scenario. Verify the same reaction in the actual built site as well as the board; a valid script does not prove that publication retained local reaction data. Test a non-script phrase: an exact next action can commit the script instead, and an exact action belonging to another scenario can prompt to switch.
 
 
 These examples use this explicitly enabled plugin. Engine flow/state/review rules remain in the engine skill.
+
+## A whole flow on one whiteboard
+Use when reviewers should see the whole feature, not one screen at a time: several screens side by side, joined by arrows, with sticky notes for edge cases, and the camera walking from screen to screen.
+- One layer: <Canvas w h> (from @joplo-app/plugin-content, enable content too) containing one <Board>. Place each screen as <BrowserWindow id label url pos="absolute" top left w h> (or a Phone) and write its page inside with normal ui components; they stay clickable and typeable.
+- <Arrow from to label> joins two element ids on the same Board (a button to the next screen reads best). <Note pos="absolute" top left color> holds a comment that stays on the board; callout() is for a reason that belongs to one step only. Arrow must be a direct child of Board; ARROW_TARGET_UNKNOWN means no element on that Board has the id.
+- Reveal the next screen and its arrow in the same step with when; an arrow to a hidden element is not drawn. Arrows draw themselves in when they appear during playback.
+- Per step: camera('screenA', 'screenB') frames the pair being connected. End with a camera on every visible screen and note, not camera() of the whole world, which leaves empty paper when later screens are hidden.
+- Leave 160–280 px between screens for arrow labels; keep notes slightly rotated (default -2°) and screens straight. Text inside screens is read at the zoom of a two-screen shot: check it in a rendered storyboard.
+
+## Recreating a product screen recording (an editor, a chat box, voice input)
+Use when the reference is a real product's recording and the look must match closely: one fixed screen whose small parts change (caret, hints, a timer, a waveform), not a tour of pages.
+- Frame it like the recording: one layer holding a content <Canvas> at the view size (1280×800) with drift={false}, the product UI centred in it, and chapter or brand labels as screen children. No camera moves are needed; a drifting camera makes small UI text shimmer.
+- Write the screen with HTML tags and a project theme scoped to one root class (--jp-stroke: clean). There are no svg/img tags: draw line icons as CSS mask-image data-URL SVGs on an empty span, so they take currentColor. Replace third-party logos with neutral shapes.
+- Put the editable text in state split around the cursor: before, the clickable character, the words being added, the caret, an inline hint, after. An empty string draws nothing, so one tree covers an empty box, appending at the end and inserting mid-sentence. Keep the box's text column bottom-aligned with overflow hidden ("scrolls to the newest line") and pad its bottom for anything hanging under the caret.
+- Clicking into the middle of text: only interactive elements can be click targets, and a plain span gives NOT_INTERACTIVE. Wrap the character to click in <a id> styled exactly like the body text, then move it into "after" in the click step.
+- Live details (caret blink, waveform, a blinking tail) are CSS @keyframes in the theme: the engine clock samples and pauses them. Static frames (storyboards, deep links, thumbnails) show the animation's start, so give bars a static base height per element and animate only transform; otherwise "talking" looks silent in every screenshot.
+- Text that appears while someone talks: stream(…, { pace: 'voice' }) with say(…, { role }) on each phrase step (engine skill, story). Write each step's full text so far; the earlier words stay put and only the new ones type out in step with the voice.
+- The host already draws a key record after .press('⌃D') and floats the step title at the top left and the subtitle at the bottom centre. Do not draw your own keycap; keep a chapter label clear of the collapsed title dot (about 56 px from the left) and important content out of the bottom centre.
+- A product recording explains itself: config({ autoFocus: false }) removes the automatic pulse rings around changed elements.
+- Translations are longer: let a headline wrap (text-wrap: balance) instead of nowrap, and use overflow-wrap: anywhere rather than word-break: break-all, which splits English words. Text split across state values needs spaces at the seams in English (engine skill, publish). Render each language with render --content <lang>.
 
 ## Controls over a visual story
 - Use Image with asset() for the actual downloaded artwork; keep source/creator/license/modification details beside the files. CSS crop/opacity changes still belong in that record. Do not use a remote URL as an offline-image substitute.
@@ -26,13 +46,14 @@ These examples use this explicitly enabled plugin. Engine flow/state/review rule
 - Hover and dragging need a visible click alternative. A discrete timeline can use one draggable handle plus labeled endpoint buttons; keep the effects identical in both paths. Use a large enough drop zone and test it after the Canvas scales, not only at design resolution.
 
 ### authoring: worked example
+Place this work in features/<f>/works/<key>.tsx and declare unknown_email in the feature cases; cases are only available under a feature.
 ```tsx
-import { $, done, flow, option, page, set } from '@joplo-app/kit';
+import { $, done, flow, work, page, set } from '@joplo-app/kit';
 import { Alert, Button, Loader, Stack, TextInput } from '@joplo-app/plugin-ui';
 const send = (name: string, cases: string[]) => flow(name, { start: '/reset', cases })
   .type('email', 'ana@exmple.com').click('send', 'Send the reset link', set($.ui.sending, true));
-export default option({
-  name: 'A · Email link', idea: 'Send a reset link by email',
+export default work({
+  title: 'A · Email link', summary: 'Send a reset link by email',
   state: { ui: { sending: false, sent: false, emailError: '' } },
   routes: { '/reset': page({ title: 'Reset password' }, <Stack>
     <TextInput id="email" label="Email" error={$.ui.emailError} />
@@ -155,4 +176,4 @@ From focus:
 Common pitfall: Only catalog components and the listed HTML tags exist; <br/> is UNKNOWN_COMPONENT, so write 'Line 1\nLine 2' inside <Text>
 
 Common pitfall: UI and HTML belong to this plugin: import author markers directly from @joplo-app/plugin-ui, explicitly enable ui in config.plugins, and read ui/components. The engine has no bare-name or old-IR compatibility layer.
-<!-- joplo-skill 0.3.0 sha256:ca0dbf9b4ed602447fdb675f954c3d5ff8137fdcf6beb75c413383a1efb773ab -->
+<!-- joplo-skill 0.6.0 sha256:ef661f41ba3f78c48f5f68f70f05ed50b98e8e6eedcf801cfb1449983825e10c -->
