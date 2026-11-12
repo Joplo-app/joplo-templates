@@ -23,7 +23,7 @@ The plugin skills under each template's `.claude/skills/` are a snapshot so an a
 
 ### Compatibility and bundled guide refresh
 
-The current templates are verified with the published Joplo **0.7.1** CLI. Keep `__JOPLO_VERSION__` in template dependencies: init pins the CLI, kit and selected plugins to the same installed version. This is a compatibility baseline, not a version or tag for this repository.
+The current templates are verified with the published Joplo **0.7.3** CLI. Keep `__JOPLO_VERSION__` in template dependencies: init pins the CLI, kit and selected plugins to the same installed version. This is a compatibility baseline, not a version or tag for this repository.
 
 Only bundle guides for plugins enabled by each template. Neither template currently needs sound-effect, video or Lottie tracks, so neither adds `@joplo-app/plugin-av`. Projects that need those tracks can install that package explicitly; its manifest and guide topic are still named `media` (`joplo skill media`).
 
@@ -74,7 +74,7 @@ npx joplo dev --open
 
 ### 兼容性与随附指南刷新
 
-当前模板已使用正式发布的 Joplo **0.7.1** CLI 验证。依赖继续保留 `__JOPLO_VERSION__`：init 会把 CLI、kit 与所选插件固定为同一版本。这是兼容性验证基线，不是本仓库的版本号或 tag。
+当前模板已使用正式发布的 Joplo **0.7.3** CLI 验证。依赖继续保留 `__JOPLO_VERSION__`：init 会把 CLI、kit 与所选插件固定为同一版本。这是兼容性验证基线，不是本仓库的版本号或 tag。
 
 只随附模板实际启用的插件指南。两个模板都不需要独立音效、视频或 Lottie 轨道，因此不新增 `@joplo-app/plugin-av` 依赖；需要这些轨道的项目自行显式安装。该包的 manifest 和指南主题仍叫 `media`，通过 `joplo skill media` 阅读。
 

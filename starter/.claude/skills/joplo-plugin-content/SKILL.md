@@ -3,7 +3,7 @@ name: joplo-plugin-content
 description: "Use the Visual explainers plugin in Joplo; read its entry, component recipes and recovery rules for this project."
 ---
 
-# Joplo plugin content: Visual explainers 0.7.1
+# Joplo plugin content: Visual explainers 0.7.3
 
 Author package: @joplo-app/plugin-content
 # Joplo content production: content
@@ -143,6 +143,7 @@ chapter('What does it read?')
 
 ## Diagnostics and recovery
 - CAMERA_UNKNOWN: the id must exist in a current layer or stage; frame elements inside this Canvas. CAMERA_INVALID: pad 0–2000, zoom 0.1–10, ms 0–10000, drift false | 0.5–2 | { zoom 0.5–2, x/y −2000–2000, ms 500–60000 }, finite numbers only; <Canvas drift> takes the same values and <Canvas safe> is four numbers 0–2000.
+- CAMERA_TARGET_HIDDEN: a camera target (or its ancestor) is hidden in this step's declared state. Its DOM bounds cannot be measured, so the view may fall back to the whole canvas. For scenes swapped with when, aim at a separate always-visible, sized anchor at the same coordinates; alternatively switch to the new visible target in the same step, or call camera() to intentionally show the world. Check inherited camera targets at chapter starts too. This warning uses declared visibility, including ancestors and responsive gates; it cannot measure CSS layout. Do not retain a previous DOM measurement as a fix: direct links and screenshots must reproduce the same frame without playback history.
 - PLUGIN_PROPERTY_INVALID: motion is a nonempty string; motionDelay/motionMs/enterMs/enterDelay/exitMs/exitDelay are finite numbers 0–10000; enterStagger/exitStagger are 0–2000; screen is boolean; enter/exit are one of fade, rise, zoom, shrink, wipe, iris, grow, growUp, blur; enterEase/exitEase/motionEase are one of smooth, snappy, spring, bounce, linear.
 - SPLIT_INVALID: <Split> needs a nonempty text prop (a literal or a state binding), by is word or char, and the text goes in text, not in children. These universal properties are literals, not state bindings. Use separate same-key elements with when for a flight between containers.
 - Exit ghosts appear only during playback, never in screenshots, thumbnails, deep links, reduced motion or after a jump. They settle instantly (enter jumps to its end, ghosts vanish) on a jump, stop, scene change and the viewer's first input on the stage (a click, key or drag; the player's pause button keeps them frozen), so the input always acts on the final picture. The camera does not settle on input: it freezes where it is. Ghosts carry no id: camera, hints and Alt-click never target them.
@@ -164,4 +165,4 @@ General engine contracts: npx joplo skill plugins
 - [patterns](./topics/patterns.md): Recipes and individual pitfalls
 
 Engine contracts: [plugins](../joplo/topics/plugins.md).
-<!-- joplo-skill 0.7.1 sha256:27f24b33b65f3903a8f08fac868f248baab4379eded5de1c013961f627ec5953 -->
+<!-- joplo-skill 0.7.3 sha256:162deb9678923a47d5ef8d8e4be9016a5e1e0af00f5e11a49cb83187c077cc4a -->
