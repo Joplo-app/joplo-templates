@@ -3,7 +3,7 @@ name: joplo-plugin-ui
 description: "Use the Standard UI plugin in Joplo; read its entry, component recipes and recovery rules for this project."
 ---
 
-# Joplo plugin ui: Standard UI 0.7.1
+# Joplo plugin ui: Standard UI 0.8.0
 
 Author package: @joplo-app/plugin-ui
 # Standard UI: ui
@@ -21,7 +21,7 @@ Use this plugin for application interfaces, forms, overlays, navigation, data di
 - Select accepts the displayed label or stored value; MultiSelect toggles membership. For a bound option list, ensure the list exists before the select step.
 - Modal and Drawer use opened, only; the old open alias is not supported. Menu forwards opened to its own dropdown; an explicitly set child value wins, and a nested menu owns its own state.
 - AppShell regions and Phone child width use the same declared layout data as playback. A narrow screen can hide a target even when when is true; check the actual viewport before changing the step.
-- Image accepts embedded project assets via asset('./photo.jpg'). URLs and ordinary paths intentionally draw a placeholder; fix IMAGE_PLACEHOLDER by embedding the file. fit accepts cover or contain.
+- Image accepts embedded project assets via asset('./photo.jpg') and direct localResource(...) references from enabled image plugins. Pass the reference directly as src; do not interpolate it into a string. Check generation diagnostics separately: accepting a resource reference does not prove its artifact exists. URLs and ordinary paths intentionally draw a placeholder; fix IMAGE_PLACEHOLDER by embedding the file. fit accepts cover or contain.
 - Display properties are declared per component for translation. Identifiers, structural values and unrelated props are not automatically display text; for custom content, declare text or exact textPaths traits in its own plugin. For nested data, target titles/labels precisely; do not translate an entire configuration object containing colors or identifiers.
 
 ## Migration and recovery
@@ -40,4 +40,4 @@ General engine contracts: npx joplo skill plugins
 - [patterns](./topics/patterns.md): UI recipes and individual pitfalls
 
 Engine contracts: [plugins](../joplo/topics/plugins.md).
-<!-- joplo-skill 0.7.1 sha256:b259c5745112a603f951bc39807027e277d32799d2f0ae5ff56d6f180a45b52e -->
+<!-- joplo-skill 0.8.0 sha256:c2077c124749f37588fc0d6b1f248ec5c8bc5084e39fac4ac83a95decab77c97 -->

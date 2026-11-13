@@ -3,7 +3,7 @@ name: joplo-plugin-alda
 description: "Use the Alda background music plugin in Joplo; read its entry, component recipes and recovery rules for this project."
 ---
 
-# Joplo plugin alda: Alda background music 0.7.1
+# Joplo plugin alda: Alda background music 0.8.0
 
 Author package: @joplo-app/plugin-alda
 # Alda background music: compose, inspect, render
@@ -42,6 +42,14 @@ Put play on the first step and stop only at the real ending. A scenario that doe
 For a historical or multi-theme piece, keep original motifs in one score map, reuse a short melodic motif, and change its instrument at the visual transition. Use distinct named scores and instrument programs rather than copyrighted startup recordings. Chapter seams: chain chapters with chapter() default continuation — a from chapter starts with the music its previous chapter ended with, and sequential playback keeps it playing across the seam. Start the next chapter's score with fadeMs 2000–2600 on the beat just before the visual change (a J-cut), not with stop + play; leave space between notes for narration. Direct navigation to an after-action entry also resolves that step's media snapshot.
 
 `from` is a marker name without `%`, resolved by Alda during local compilation. Only a numeric offset enters IR; jump/deep link/screenshot state uses that same offset plus the engine anchor. A non-continuing scenario starts silent. Same-score play continues; a different score with fadeMs crossfades; chapter() default continuation inherits music. An explicit marker selects a numeric seek. Set `loop: true` only for a phrase designed to repeat. Loop repeats the full score; from only selects its initial seek, not a loop region. `volume` is 0–1, `fadeMs` 0–30000. Put play alongside a chapter's visual change. Stop with done, allowing an ending hold for the fade; a stop at the instant playback ends cannot create extra playback time. Anchors advance with commitGapMs: the preceding step's planned stay (hold or reading time, or estimated narration when that is longer) plus the next step's action demonstration. Use explicit `hold(seconds)` when exact chapter pacing matters. Actual narration or interaction waits do not redefine later planned score anchors.
+
+## Delayed starts and crowded crossfades
+
+music.play('film', { startDelayMs: 300, duck: false, maxRetiring: 1 }) waits 300 engine ms after the step commits. startDelayMs accepts 0–60000; it does not seek or consume notes. from still selects the source marker. Fade-in begins at actual source start. Pause freezes the wait, speed scales its wall duration, and chapter continuation preserves remaining wait. Explicitly issuing delay again creates a new deterministic event even with the same score; omit the option to retain existing behavior.
+
+duck defaults true: narration multiplies the authored gain by .25. duck:false exempts this music track, including its own retiring fades; it does not change narration or other tracks. Use a restrained volume and listen to the mix. maxRetiring is an integer 0–32 per named track: 1 means current music plus the most recently retired music; 0 removes exiting music immediately while preserving current. Omit it to retain all exiting fades as before. Limits evict by retirement order, not resource name or remaining fade length, and never cap unrelated tracks or independent SFX. When replacing music with both startDelayMs and fadeMs, the old cue starts fading out at command commit and the new cue starts fading in only after its delay. If delay exceeds fadeMs, there can be a silent gap; this combination does not promise a continuous crossfade. For an ordinary continuous crossfade omit the delay. End holds must include any delay and fade you want the audience to hear; delay adds no automatic hold.
+
+For offline reconstruction retain timeline media snapshots and packaged audio. startDelayMs is the original plan, delayRemainingMs the remaining wait, startEventId the explicit delayed event identity, and endAfterMs (when present) excludes waiting. For a fresh delayed play observed at commit engineMs, the nominal eligibility time for this observation is engineMs + delayRemainingMs (falling back to startDelayMs only when remaining is absent). On an inherited snapshot use its remaining wait, never add the original plan again; the same startEventId identifies the continued cue, while a new startEventId is a new explicit delayed play even for the same resource. A chapter/deep-link timeline may first observe an inherited cue as play, so deduplicate across joined observations by that identity rather than resource alone. If remaining is zero on a continued identity, it is already eligible: do not emit another start or infer its original onset from that snapshot. Without the earlier play observation, the original start is unknown. Source trim, fade-in and silence inside the audio bytes can shift the first audible sample; scheduling metadata cannot detect that silence. Timeline play events identify observed command commits, not measured acoustic onset; the existing export sampling tolerance still applies. MUSIC_OPTIONS_INVALID means fix these option types/ranges, not reinstall Alda.
 
 ## Plan the form before notes
 
@@ -122,6 +130,25 @@ Separate named pieces suit contrasting eras or a chapter that changes length ind
 
 MEDIA_ASSET_LARGE checks the 2 MiB absolute size for every track; the 0.75 MB/min rate check only applies to clips at least 15 seconds long. Short clips pay fixed codec context overhead: splitting them does not improve bitrate.
 
+## Stable local lossless files
+For pitched one-shot effects or external lossless mixing, import renderLossless from @joplo-app/plugin-alda/local. It shares music.play's Alda → MIDI → verified bank → normalized PCM → FLAC master path, with no MP3 calibration probe, guard or encoder padding. It does not read internal music-masters filenames or choose a JOPLO_HOME for you.
+```ts
+import { renderLossless } from '@joplo-app/plugin-alda/local';
+import { mkdtemp, writeFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+const directory = await mkdtemp(join(tmpdir(), 'joplo-score-'));
+try {
+  const result = await renderLossless('piano: c1', {
+    directory, cacheDir: resolve('.cache/alda'), loop: false,
+    maxBytes: 50 * 1024 * 1024,
+  });
+  await writeFile('cue.flac', result.bytes);
+  console.log(result.audio, result.info.markers);
+} finally { await rm(directory, { recursive: true, force: true }); }
+```
+directory is a caller-owned writable temporary-work parent; jobs clean their private subdirectory. cacheDir is an explicit persistent private plugin cache (a project-owned .cache/alda is valid); provision its verified SoundFont cache online before offline rendering. First use can download the same pinned bank/license as ordinary music. No cloud/TTS generation occurs. Install Alda 2.4.8 when the tool is missing, verify `alda version`, then retry; the API preserves the existing pinned-version/bank verification failures. Output is fixed 44.1kHz stereo 16-bit FLAC with existing AudioRegion metadata: contentStartFrame/encoderDelayFrames/paddingFrames are zero, contentFrames includes non-loop release/reverb tail, cycleFrames is the musical cycle, and info.durationMs/markers describe score timing. loop:true folds the tail into the cycle; loop:false keeps it. bytes/credit/license use the existing LocalArtifact fields; preserve attribution with downstream files. This is an author-file API, not a larger playback budget: verify encoded 4 MiB and decoded 32 MiB host limits before embedding the file.
+
 Pipeline: Alda 2.4.8 → temporary MIDI → SpessaSynth Core 4.4.9 with FluidR3Mono GM 2.312 → 44.1kHz stereo PCM → **MP3 96 kbps stereo at 32kHz**. The deterministic 24-tap/256-phase resampler, fixed LAME encoder (@breezystack/lamejs 1.2.7) and verification decoder (mpg123-decoder 1.0.3) run in Node; no ffmpeg or FluidSynth installation is required. FLAC (libflacjs 5.6.0) is only an author-side master in `.joplo/music-masters`; it never enters the site, and there is no lossless publication switch. First rendering downloads the pinned, SHA-256-verified ~14.5MB SF3 and license to `JOPLO_HOME/plugins/alda/cache/soundfonts/<hash>/` (default ~/.joplo). The bank stays local. Published `credits.txt` and `music-LICENSE.txt` preserve bank attribution and full license even when Alda inspection is unavailable; missing artifact attribution blocks publication.
 
 To preinstall on a connected author machine, run this **from the project**:
@@ -160,4 +187,4 @@ General engine contracts: npx joplo skill plugins
 ## Installed references
 
 Engine contracts: [plugins](../joplo/topics/plugins.md).
-<!-- joplo-skill 0.7.1 sha256:49bdaffd39345034bf228f7b68d06a29df3e0532f4eeb466f01110d852ea9745 -->
+<!-- joplo-skill 0.8.0 sha256:f5a47f3c1fe00d66e1c82c0e190eb3d1d4fe2e04e31984785d1a539892158beb -->

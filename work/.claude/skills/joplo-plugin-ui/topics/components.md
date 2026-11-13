@@ -512,4 +512,4 @@ data: string[] | [{ value, label, icon?, badge? }], value / defaultValue, aria-l
 </Stack>
 // steps: .select('tabs', 'trips', go('/trips'))
 ```
-<!-- joplo-skill 0.7.1 sha256:acd58306cd767c76af9591c89d432e890a83ea0200351ca3945dad0c5326fb6b -->
+<!-- joplo-skill 0.8.0 sha256:acd58306cd767c76af9591c89d432e890a83ea0200351ca3945dad0c5326fb6b -->

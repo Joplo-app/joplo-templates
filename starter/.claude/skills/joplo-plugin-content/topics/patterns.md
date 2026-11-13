@@ -86,4 +86,4 @@ Symptoms in an existing piece: one board per chapter (label, big title, panels, 
 For runtime layout QA, use joplo render --audit-layout for a final-state screenshot and --film --audit-layout for motion. Declare important selectors, a content frame and reserved footer/subtitle rectangles; exclude intentional stamps/background overlays. Text Range bounds reflect loaded fonts and actual Canvas scaling. Canvas exposes its existing engine-clock camera, drift midpoint/end and sequence-waypoint deadlines only as DOM diagnostic hints; static/jump/exploration states do not claim future motion. A later step can interrupt a phase, and masks/rotation or hidden content remain unknown rather than "visible". Inspect evidence before changing intentional overlap.
 
 Common pitfall: For visual explainers, read npx joplo skill content: keep a continuous visual story, storyboard every chapter, film-strip the chain, and verify playback before claiming it works
-<!-- joplo-skill 0.7.1 sha256:4642218b1b256cc9edca4dc1e6c5241a000066954f7e0e93155638898e308dd6 -->
+<!-- joplo-skill 0.8.0 sha256:4642218b1b256cc9edca4dc1e6c5241a000066954f7e0e93155638898e308dd6 -->
